@@ -1,59 +1,48 @@
-# LaundryApp
+# LaundryApp Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.0.5.
+Aplikasi frontend untuk sistem manajemen Laundry, dibangun dengan Angular.
 
-## Development server
+## Prerequisites
 
-To start a local development server, run:
+- Node.js (v18+)
+- Angular CLI (`npm install -g @angular/cli`)
+
+## Setup & Instalasi
+
+1. Clone repositori ini.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Copy template environment:
+   ```bash
+   cp src/environments/environment.example.ts src/environments/environment.ts
+   cp src/environments/environment.example.ts src/environments/environment.prod.ts
+   ```
+4. Sesuaikan `supabaseUrl` dan `supabaseAnonKey` di file `environment.ts` dengan data dari Supabase Dashboard.
+
+## Menjalankan Aplikasi
+
+Jalankan server development:
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Buka `http://localhost:4200/` di browser. Aplikasi otomatis reload jika ada perubahan kode.
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+## Build untuk Production
 
 ```bash
 ng build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Hasil build akan ada di folder `dist/`.
 
-## Running unit tests
+## Fitur
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- Autentikasi User (Supabase Auth)
+- Dashboard Admin & Pelanggan
+- Manajemen Paket Laundry
+- Manajemen Pesanan
+- Upload Bukti Pembayaran
