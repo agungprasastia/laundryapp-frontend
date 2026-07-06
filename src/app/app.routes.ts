@@ -8,7 +8,7 @@ export const routes: Routes = [
   },
   {
     path: 'pakets',
-    loadComponent: () => import('./features/public/landing.component').then(m => m.LandingComponent),
+    loadComponent: () => import('./features/public/pakets.component').then(m => m.PaketsComponent),
   },
   {
     path: 'cek-status',

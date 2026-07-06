@@ -2,9 +2,10 @@ import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { ApiService } from '../services/api.service';
-import { firstValueFrom } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
-export const authGuard: CanActivateFn = async () => {
+export const authGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
   if (!auth.token) {
@@ -14,32 +15,52 @@ export const authGuard: CanActivateFn = async () => {
   return true;
 };
 
-export const adminGuard: CanActivateFn = async () => {
+export const adminGuard: CanActivateFn = (): Observable<boolean> | boolean => {
   const auth = inject(AuthService);
   const api = inject(ApiService);
   const router = inject(Router);
-  if (!auth.token) { router.navigate(['/login']); return false; }
-  try {
-    const profile = await firstValueFrom(api.getMe());
-    if (profile.role !== 'admin') { router.navigate(['/']); return false; }
-    return true;
-  } catch {
-    router.navigate(['/login']);
-    return false;
+  
+  if (!auth.token) { 
+    router.navigate(['/login']); 
+    return false; 
   }
+  
+  return api.getMe().pipe(
+    map(profile => {
+      if (profile.role !== 'admin') {
+        router.navigate(['/']);
+        return false;
+      }
+      return true;
+    }),
+    catchError(() => {
+      router.navigate(['/login']);
+      return of(false);
+    })
+  );
 };
 
-export const pelangganGuard: CanActivateFn = async () => {
+export const pelangganGuard: CanActivateFn = (): Observable<boolean> | boolean => {
   const auth = inject(AuthService);
   const api = inject(ApiService);
   const router = inject(Router);
-  if (!auth.token) { router.navigate(['/login']); return false; }
-  try {
-    const profile = await firstValueFrom(api.getMe());
-    if (profile.role !== 'pelanggan') { router.navigate(['/']); return false; }
-    return true;
-  } catch {
-    router.navigate(['/login']);
-    return false;
+  
+  if (!auth.token) { 
+    router.navigate(['/login']); 
+    return false; 
   }
+  
+  return api.getMe().pipe(
+    map(profile => {
+      if (profile.role !== 'pelanggan') {
+        router.navigate(['/']);
+        return false;
+      }
+      return true;
+    }),
+    catchError(() => {
+      router.navigate(['/login']);
+      return of(false);
+    })
+  );
 };

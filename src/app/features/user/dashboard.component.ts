@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
@@ -11,104 +11,129 @@ import { StatCardComponent } from '../../shared/components/stat-card.component';
   standalone: true,
   imports: [CommonModule, RouterModule, StatusBadgeComponent, StatusStepperComponent, StatCardComponent],
   template: `
-    <div class="page">
-      <div class="header">
-        <h1>Dashboard Saya</h1>
-        <a routerLink="/user/pesan" class="btn-primary">
-          <span class="material-icons">add</span> Buat Pesanan
-        </a>
-      </div>
-
-      <!-- Stats -->
-      <div class="stats-grid" *ngIf="data">
-        <app-stat-card label="Total Pesanan" [value]="data.stats.total" icon="receipt_long" color="#0d9488"></app-stat-card>
-        <app-stat-card label="Baru" [value]="data.stats.baru" icon="fiber_new" color="#3b82f6"></app-stat-card>
-        <app-stat-card label="Proses" [value]="data.stats.proses" icon="autorenew" color="#f59e0b"></app-stat-card>
-        <app-stat-card label="Selesai" [value]="data.stats.selesai" icon="check_circle" color="#10b981"></app-stat-card>
-      </div>
-
-      <!-- Pesanan list -->
-      <div class="section" *ngIf="data">
-        <h2>Riwayat Pesanan</h2>
-        <div *ngIf="!data.pesanans.length" class="empty">
-          <span class="material-icons">inbox</span>
-          <p>Belum ada pesanan</p>
+    <div class="min-h-screen bg-slate-50 p-6 md:p-8 font-sans">
+      <div class="max-w-5xl mx-auto">
+        
+        <!-- Header Banner -->
+        <div class="bg-gradient-to-r from-primary to-primary-700 rounded-3xl p-8 md:p-10 text-white mb-10 shadow-lg shadow-primary/20 relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
+          <div class="relative z-10">
+            <h1 class="text-3xl md:text-4xl font-bold font-serif mb-2">Dashboard Saya 👋</h1>
+            <p class="text-primary-100 text-lg">Kelola dan pantau pesanan laundry Anda dengan mudah.</p>
+          </div>
+          <a routerLink="/user/pesan" class="relative z-10 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-primary font-bold rounded-xl hover:bg-slate-50 hover:scale-105 transition-all duration-300 shadow-md w-full md:w-auto">
+            <span class="material-icons text-xl">add_circle</span> Buat Pesanan Baru
+          </a>
         </div>
-        <div class="pesanan-list">
-          <div class="pesanan-card" *ngFor="let p of data.pesanans">
-            <div class="card-top">
-              <div>
-                <span class="order-id">#{{ p.id }}</span>
-                <span class="paket-name">{{ p.pakets?.nama_paket }}</span>
+
+        <!-- Stats -->
+        <div *ngIf="errorMsg" class="bg-red-50 text-red-600 p-4 rounded-xl font-medium border border-red-100 mb-8 flex items-center gap-2">
+          <span class="material-icons">error_outline</span> {{ errorMsg }}
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-10" *ngIf="data">
+          <app-stat-card label="Total Pesanan" [value]="data.stats.total" icon="receipt_long" color="#0d9488"></app-stat-card>
+          <app-stat-card label="Baru" [value]="data.stats.baru" icon="fiber_new" color="#3b82f6"></app-stat-card>
+          <app-stat-card label="Proses" [value]="data.stats.proses" icon="autorenew" color="#f59e0b"></app-stat-card>
+          <app-stat-card label="Selesai" [value]="data.stats.selesai" icon="check_circle" color="#10b981"></app-stat-card>
+        </div>
+
+        <!-- Pesanan list -->
+        <div *ngIf="data" class="mb-10">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-slate-800 font-sans">Riwayat Pesanan</h2>
+          </div>
+          
+          <div *ngIf="!data.pesanans.length" class="bg-white rounded-3xl p-12 text-center border border-slate-100 shadow-sm">
+            <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <span class="material-icons text-5xl text-slate-300">inbox</span>
+            </div>
+            <h3 class="text-xl font-bold text-slate-700 mb-2 font-sans">Belum ada pesanan</h3>
+            <p class="text-slate-500 mb-8">Anda belum pernah membuat pesanan laundry.</p>
+            <a routerLink="/user/pesan" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary-600 transition-colors shadow-md shadow-primary/20">
+              Mulai Pesanan Pertama
+            </a>
+          </div>
+
+          <div class="flex flex-col gap-6" *ngIf="data.pesanans.length">
+            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-100" *ngFor="let p of data.pesanans">
+              
+              <div class="flex flex-wrap justify-between items-center mb-6 gap-4 border-b border-slate-100 pb-6">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                    <span class="material-icons text-primary">receipt_long</span>
+                  </div>
+                  <div>
+                    <span class="text-xl font-bold text-slate-900 block">#{{ p.id }}</span>
+                    <span class="text-sm font-medium text-slate-500">{{ p.pakets?.nama_paket }}</span>
+                  </div>
+                </div>
+                <app-status-badge [text]="p.status"></app-status-badge>
               </div>
-              <app-status-badge [text]="p.status"></app-status-badge>
-            </div>
-            <app-status-stepper [status]="p.status"></app-status-stepper>
-            <div class="card-details">
-              <span>{{ p.tanggal }}</span>
-              <span>{{ p.berat }} kg</span>
-              <span class="total">Rp {{ p.total_bayar | number:'1.0-0' }}</span>
-              <app-status-badge [text]="p.status_bayar" type="bayar"></app-status-badge>
-            </div>
-            <div class="card-actions">
-              <a [routerLink]="['/user/pesanan', p.id]" class="link">Detail</a>
-              <a *ngIf="p.status_bayar !== 'Lunas' && p.total_bayar > 0"
-                 [routerLink]="['/user/bayar', p.id]" class="link accent">Bayar</a>
+
+              <div class="mb-8">
+                <app-status-stepper [status]="p.status"></app-status-stepper>
+              </div>
+              
+              <div class="bg-slate-50 rounded-2xl p-5 md:p-6 flex flex-wrap items-center justify-between gap-6">
+                <div class="flex gap-8 flex-wrap">
+                  <div>
+                    <p class="text-xs text-slate-400 font-medium mb-1">Tanggal</p>
+                    <p class="font-semibold text-slate-800">{{ p.tanggal }}</p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-slate-400 font-medium mb-1">Berat</p>
+                    <p class="font-semibold text-slate-800">{{ p.berat }} kg</p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-slate-400 font-medium mb-1">Total</p>
+                    <p class="font-bold text-primary">Rp {{ p.total_bayar | number:'1.0-0' }}</p>
+                  </div>
+                  <div class="flex flex-col justify-center">
+                    <p class="text-xs text-slate-400 font-medium mb-1">Pembayaran</p>
+                    <app-status-badge [text]="p.status_bayar" type="bayar"></app-status-badge>
+                  </div>
+                </div>
+                
+                <div class="flex gap-3 w-full md:w-auto mt-4 md:mt-0 border-t border-slate-200 pt-4 md:border-0 md:pt-0">
+                  <a [routerLink]="['/user/pesanan', p.id]" class="flex-1 md:flex-none text-center px-5 py-2.5 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-colors">Detail</a>
+                  <a *ngIf="p.status_bayar !== 'Lunas' && p.total_bayar > 0"
+                     [routerLink]="['/user/bayar', p.id]" class="flex-1 md:flex-none text-center px-5 py-2.5 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 shadow-md shadow-amber-500/20 transition-all">Bayar</a>
+                </div>
+              </div>
+              
             </div>
           </div>
         </div>
-      </div>
 
-      <div *ngIf="loading" class="loading">
-        <div class="skeleton" *ngFor="let i of [1,2,3]"></div>
+        <div *ngIf="loading" class="flex flex-col gap-6">
+          <div class="h-32 rounded-3xl bg-slate-200 animate-pulse" *ngFor="let i of [1,2,3]"></div>
+        </div>
       </div>
     </div>
   `,
-  styles: [`
-    .page { padding: 32px 5vw; max-width: 1000px; margin: 0 auto; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
-    h1 { font-size: 28px; font-weight: 700; color: #0f172a; margin: 0; }
-    .btn-primary {
-      display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px;
-      background: #0d9488; color: white; border-radius: 10px; text-decoration: none;
-      font-weight: 600; font-size: 14px; transition: background 0.2s;
-    }
-    .btn-primary:hover { background: #0f766e; }
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
-    .section h2 { font-size: 20px; font-weight: 700; color: #0f172a; margin-bottom: 16px; }
-    .empty { text-align: center; padding: 60px 20px; color: #94a3b8; }
-    .empty .material-icons { font-size: 64px; margin-bottom: 8px; }
-    .pesanan-list { display: flex; flex-direction: column; gap: 16px; }
-    .pesanan-card {
-      background: white; border-radius: 16px; padding: 20px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;
-    }
-    .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .order-id { font-weight: 700; color: #0f172a; margin-right: 8px; }
-    .paket-name { color: #64748b; font-size: 14px; }
-    .card-details {
-      display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
-      margin-top: 16px; font-size: 14px; color: #374151;
-    }
-    .total { font-weight: 700; color: #0d9488; }
-    .card-actions { display: flex; gap: 16px; margin-top: 12px; }
-    .link { font-size: 14px; font-weight: 600; color: #0d9488; text-decoration: none; }
-    .link.accent { color: #f59e0b; }
-    .loading { display: flex; flex-direction: column; gap: 16px; }
-    .skeleton { height: 140px; border-radius: 16px; background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200%; animation: shimmer 1.5s infinite; }
-    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-  `]
+  styles: []
 })
 export class UserDashboardComponent implements OnInit {
   data: any = null;
   loading = true;
+  errorMsg = '';
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.api.getUserDashboard().subscribe({
-      next: d => { this.data = d; this.loading = false; },
-      error: () => this.loading = false,
+      next: d => { 
+        this.data = d; 
+        this.loading = false; 
+        this.cdr.detectChanges(); 
+      },
+      error: (err) => {
+        console.error('Failed to load user dashboard:', err);
+        this.errorMsg = 'Gagal memuat data. Silakan coba lagi.';
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
     });
   }
 }

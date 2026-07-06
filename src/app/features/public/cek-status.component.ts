@@ -10,45 +10,88 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge.compo
   standalone: true,
   imports: [CommonModule, FormsModule, StatusStepperComponent, StatusBadgeComponent],
   template: `
-    <div class="page">
-      <div class="container">
-        <h1>Cek Status Pesanan</h1>
-        <p class="subtitle">Masukkan nomor HP atau ID pesanan Anda</p>
+    <div class="min-h-[80vh] bg-surface-dark py-16 px-6 font-sans relative overflow-hidden">
+      <!-- Decorative background elements -->
+      <div class="absolute top-0 right-0 -mr-20 -mt-20 w-72 h-72 rounded-full bg-primary/5 blur-3xl"></div>
+      <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-accent/20 blur-3xl"></div>
+      
+      <div class="max-w-3xl mx-auto relative z-10">
+        <div class="text-center mb-10">
+          <h1 class="text-3xl md:text-4xl font-bold text-slate-900 mb-3 font-serif">Cek Status Pesanan</h1>
+          <p class="text-slate-500">Masukkan nomor HP atau ID pesanan Anda untuk melacak progress laundry.</p>
+        </div>
 
-        <div class="search-box">
-          <span class="material-icons">search</span>
+        <div class="bg-white p-2 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-3 transition-all duration-300 focus-within:shadow-md focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/10 mb-2">
+          <span class="material-icons text-slate-400 pl-4">search</span>
           <input
-            type="text" [(ngModel)]="query" placeholder="Nomor HP atau ID pesanan..."
+            type="text" [(ngModel)]="query" placeholder="Contoh: 081234567890 atau ID Pesanan..."
+            class="flex-1 border-none outline-none text-slate-700 placeholder-slate-400 py-3 bg-transparent text-base"
             (keyup.enter)="search()" [disabled]="loading"
           />
-          <button (click)="search()" [disabled]="loading || !query.trim()">
-            {{ loading ? 'Mencari...' : 'Cari' }}
+          <button (click)="search()" [disabled]="loading || !query.trim()" 
+            class="bg-primary hover:bg-primary-800 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+            {{ loading ? 'Mencari...' : 'Lacak' }}
           </button>
         </div>
 
-        <div *ngIf="error" class="error-msg">{{ error }}</div>
-
-        <div *ngIf="searched && !results.length && !loading" class="empty">
-          <span class="material-icons">inbox</span>
-          <p>Tidak ditemukan pesanan dengan pencarian tersebut</p>
+        <div *ngIf="error" class="text-red-500 bg-red-50 p-4 rounded-xl text-sm font-medium border border-red-100 flex items-center gap-2 mt-4 animate-slideInUp">
+          <span class="material-icons text-red-500">error_outline</span>
+          {{ error }}
         </div>
 
-        <div class="results" *ngIf="results.length">
-          <div class="result-card" *ngFor="let r of results">
-            <div class="result-header">
-              <span class="order-id">#{{ r.id }}</span>
+        <div *ngIf="searched && !results.length && !loading" class="text-center py-16 px-6 mt-8 bg-white rounded-3xl border border-slate-100 shadow-sm animate-slideInUp">
+          <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <span class="material-icons text-5xl text-slate-300">inbox</span>
+          </div>
+          <h3 class="text-lg font-bold text-slate-700 mb-2 font-sans">Pesanan Tidak Ditemukan</h3>
+          <p class="text-slate-500 text-sm">Pastikan nomor HP atau ID pesanan yang Anda masukkan sudah benar.</p>
+        </div>
+
+        <div class="mt-10 flex flex-col gap-6" *ngIf="results.length">
+          <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-100 animate-slideInUp" *ngFor="let r of results">
+            <div class="flex flex-wrap justify-between items-center mb-8 gap-4 border-b border-slate-100 pb-6">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                  <span class="material-icons text-primary">receipt_long</span>
+                </div>
+                <div>
+                  <p class="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">ID Pesanan</p>
+                  <span class="text-xl font-bold text-slate-900">#{{ r.id }}</span>
+                </div>
+              </div>
               <app-status-badge [text]="r.status"></app-status-badge>
             </div>
-            <app-status-stepper [status]="r.status"></app-status-stepper>
-            <div class="result-details">
-              <div class="detail"><strong>Paket:</strong> {{ r.pakets?.nama_paket }}</div>
-              <div class="detail"><strong>Berat:</strong> {{ r.berat }} kg</div>
-              <div class="detail"><strong>Total:</strong> Rp {{ r.total_bayar | number:'1.0-0' }}</div>
-              <div class="detail"><strong>Tanggal:</strong> {{ r.tanggal }}</div>
-              <div class="detail" *ngIf="r.tanggal_selesai"><strong>Selesai:</strong> {{ r.tanggal_selesai }}</div>
-              <div class="detail">
-                <strong>Pembayaran:</strong>
-                <app-status-badge [text]="r.status_bayar" type="bayar"></app-status-badge>
+            
+            <div class="mb-8">
+              <app-status-stepper [status]="r.status"></app-status-stepper>
+            </div>
+            
+            <div class="bg-slate-50 rounded-2xl p-6 grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-8">
+              <div>
+                <p class="text-xs text-slate-400 font-medium mb-1">Paket Layanan</p>
+                <p class="font-semibold text-slate-800">{{ r.pakets?.nama_paket || '-' }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-slate-400 font-medium mb-1">Berat / Jumlah</p>
+                <p class="font-semibold text-slate-800">{{ r.berat }} kg</p>
+              </div>
+              <div>
+                <p class="text-xs text-slate-400 font-medium mb-1">Tanggal Masuk</p>
+                <p class="font-semibold text-slate-800">{{ r.tanggal }}</p>
+              </div>
+              <div *ngIf="r.tanggal_selesai">
+                <p class="text-xs text-slate-400 font-medium mb-1">Tanggal Selesai</p>
+                <p class="font-semibold text-slate-800">{{ r.tanggal_selesai }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-slate-400 font-medium mb-1">Total Tagihan</p>
+                <p class="font-bold text-primary text-lg">Rp {{ r.total_bayar | number:'1.0-0' }}</p>
+              </div>
+              <div class="flex flex-col justify-center">
+                <p class="text-xs text-slate-400 font-medium mb-1">Status Pembayaran</p>
+                <div class="mt-1">
+                  <app-status-badge [text]="r.status_bayar" type="bayar"></app-status-badge>
+                </div>
               </div>
             </div>
           </div>
@@ -57,42 +100,13 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge.compo
     </div>
   `,
   styles: [`
-    .page { min-height: 80vh; background: #f8fafc; padding: 60px 5vw; }
-    .container { max-width: 700px; margin: 0 auto; }
-    h1 { font-size: 28px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
-    .subtitle { color: #64748b; margin-bottom: 24px; }
-    .search-box {
-      display: flex; align-items: center; background: white; border: 2px solid #e2e8f0;
-      border-radius: 12px; padding: 4px 4px 4px 16px; gap: 8px; transition: border-color 0.2s;
+    @keyframes slideInUp {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-    .search-box:focus-within { border-color: #0d9488; }
-    .search-box .material-icons { color: #94a3b8; }
-    .search-box input {
-      flex: 1; border: none; outline: none; font-size: 15px; padding: 10px 0; background: transparent;
+    .animate-slideInUp {
+      animation: slideInUp 0.4s ease-out forwards;
     }
-    .search-box button {
-      background: #0d9488; color: white; border: none; padding: 10px 24px;
-      border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s;
-    }
-    .search-box button:hover { background: #0f766e; }
-    .search-box button:disabled { opacity: 0.5; cursor: not-allowed; }
-    .error-msg { color: #dc2626; margin-top: 12px; font-size: 14px; }
-    .empty {
-      text-align: center; padding: 60px 20px; color: #94a3b8;
-    }
-    .empty .material-icons { font-size: 64px; margin-bottom: 12px; }
-    .results { margin-top: 32px; display: flex; flex-direction: column; gap: 20px; }
-    .result-card {
-      background: white; border-radius: 16px; padding: 24px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;
-    }
-    .result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .order-id { font-size: 18px; font-weight: 700; color: #0f172a; }
-    .result-details {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px;
-      font-size: 14px; color: #374151;
-    }
-    @media (max-width: 640px) { .result-details { grid-template-columns: 1fr; } }
   `]
 })
 export class CekStatusComponent {
