@@ -12,91 +12,93 @@ Chart.register(...registerables);
   standalone: true,
   imports: [CommonModule, RouterModule, StatCardComponent],
   template: `
-    <div class="min-h-screen bg-slate-50 p-6 md:p-8 font-sans">
-      <div class="max-w-7xl mx-auto">
-        
-        <!-- Header Banner -->
-        <div class="bg-gradient-to-r from-primary to-primary-700 rounded-3xl p-8 md:p-10 text-white mb-10 shadow-lg shadow-primary/20 relative overflow-hidden">
-          <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
-          <div class="relative z-10">
-            <h1 class="text-3xl md:text-4xl font-bold font-serif mb-2 text-white">Halo, Admin! 👋</h1>
-            <p class="text-primary-100 text-lg">Berikut adalah ringkasan performa Laundry Kinclong hari ini.</p>
-          </div>
+    <div class="p-6 md:p-8 font-sans w-full max-w-7xl mx-auto">
+      
+      <!-- Header Banner -->
+      <div class="animate-fade-up bg-gradient-to-r from-primary to-primary-700 rounded-3xl p-8 md:p-10 text-white mb-10 shadow-lg shadow-primary/20 relative overflow-hidden group">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20 transition-transform duration-1000 group-hover:scale-150"></div>
+        <div class="relative z-10">
+          <h1 class="text-3xl md:text-4xl font-bold font-serif mb-2 text-white">Halo, Admin! 👋</h1>
+          <p class="text-primary-100 text-lg">Berikut adalah ringkasan performa Laundry Kinclong hari ini.</p>
+        </div>
+      </div>
+
+      <div *ngIf="errorMsg" class="bg-red-50 text-red-600 p-4 rounded-xl font-medium border border-red-100 mb-8 flex items-center gap-2">
+        <span class="material-icons">error_outline</span> {{ errorMsg }}
+      </div>
+
+      <!-- Skeleton Loading -->
+      <div *ngIf="loading" class="animate-fade-up">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+          <div *ngFor="let i of [1,2,3,4,5,6]" class="h-[104px] rounded-xl animate-shimmer"></div>
+        </div>
+        <div class="h-[432px] rounded-3xl animate-shimmer"></div>
+      </div>
+
+      <div *ngIf="data && !loading">
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+          <app-stat-card class="animate-fade-up animate-stagger-1" label="Total Pesanan" [value]="data.stats.total_pesanan" icon="receipt_long" color="#0d9488"></app-stat-card>
+          <app-stat-card class="animate-fade-up animate-stagger-2" label="Pesanan Baru" [value]="data.stats.pesanan_baru" icon="fiber_new" color="#3b82f6"></app-stat-card>
+          <app-stat-card class="animate-fade-up animate-stagger-3" label="Sedang Proses" [value]="data.stats.pesanan_proses" icon="autorenew" color="#f59e0b"></app-stat-card>
+          <app-stat-card class="animate-fade-up animate-stagger-4" label="Verifikasi" [value]="data.stats.menunggu_verifikasi" icon="pending" color="#ef4444"></app-stat-card>
+          <app-stat-card class="animate-fade-up animate-stagger-5" label="Pesanan Hari Ini" [value]="data.stats.pesanan_hari_ini" icon="today" color="#8b5cf6"></app-stat-card>
+          <app-stat-card class="animate-fade-up animate-stagger-6" label="Total Pendapatan" [value]="'Rp ' + (data.stats.total_pendapatan | number:'1.0-0')" icon="payments" color="#059669"></app-stat-card>
         </div>
 
-        <div *ngIf="errorMsg" class="bg-red-50 text-red-600 p-4 rounded-xl font-medium border border-red-100 mb-8 flex items-center gap-2">
-          <span class="material-icons">error_outline</span> {{ errorMsg }}
-        </div>
-
-        <div *ngIf="loading" class="flex items-center justify-center p-12">
-          <span class="material-icons animate-spin text-primary text-4xl">refresh</span>
-        </div>
-
-        <div *ngIf="data && !loading">
-          <!-- Stats Grid -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-            <app-stat-card label="Total Pesanan" [value]="data.stats.total_pesanan" icon="receipt_long" color="#0d9488"></app-stat-card>
-            <app-stat-card label="Pesanan Baru" [value]="data.stats.pesanan_baru" icon="fiber_new" color="#3b82f6"></app-stat-card>
-            <app-stat-card label="Sedang Proses" [value]="data.stats.pesanan_proses" icon="autorenew" color="#f59e0b"></app-stat-card>
-            <app-stat-card label="Menunggu Verifikasi" [value]="data.stats.menunggu_verifikasi" icon="pending" color="#ef4444"></app-stat-card>
-            <app-stat-card label="Pesanan Hari Ini" [value]="data.stats.pesanan_hari_ini" icon="today" color="#8b5cf6"></app-stat-card>
-            <app-stat-card label="Total Pendapatan" [value]="'Rp ' + (data.stats.total_pendapatan | number:'1.0-0')" icon="payments" color="#059669"></app-stat-card>
-          </div>
-
-          <!-- Chart & Quick Links -->
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            <!-- Chart Section -->
-            <div class="lg:col-span-2 bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-              <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-bold text-slate-800 font-sans">Performa 7 Hari Terakhir</h2>
-                <span class="material-icons text-slate-400">trending_up</span>
-              </div>
-              <div class="relative h-[320px] w-full">
-                <canvas #chartCanvas></canvas>
-              </div>
+        <!-- Grid Layout for Chart & Recent Orders -->
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-10">
+          
+          <!-- Chart Section -->
+          <div class="xl:col-span-2 bg-white rounded-3xl p-6 shadow-sm border border-slate-100 animate-fade-up animate-stagger-2">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-xl font-bold text-slate-800 font-sans">Performa 7 Hari Terakhir</h2>
+              <span class="material-icons text-slate-400">trending_up</span>
             </div>
+            <div class="relative h-[360px] w-full">
+              <canvas #chartCanvas></canvas>
+            </div>
+          </div>
 
-            <!-- Quick Links -->
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-              <h2 class="text-xl font-bold text-slate-800 font-sans mb-6">Akses Cepat</h2>
+          <!-- Quick Actions / Recent Orders -->
+          <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 animate-fade-up animate-stagger-3 flex flex-col">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-xl font-bold text-slate-800 font-sans">Pesanan Terbaru</h2>
+              <a routerLink="/admin/pesanan" class="text-sm text-primary font-bold hover:underline">Lihat Semua</a>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto pr-2">
+              <div *ngIf="!data.recent_orders?.length" class="text-center text-slate-500 py-8">
+                <span class="material-icons text-4xl mb-2 text-slate-300">inbox</span>
+                <p>Belum ada pesanan terbaru.</p>
+              </div>
+
               <div class="flex flex-col gap-4">
-                <a routerLink="/admin/pesanan" class="group flex items-center p-4 bg-slate-50 hover:bg-primary-50 rounded-2xl transition-all duration-300 border border-slate-100 hover:border-primary-100 hover:-translate-y-1 hover:shadow-md">
-                  <div class="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center mr-4 group-hover:bg-primary transition-colors">
-                    <span class="material-icons text-slate-600 group-hover:text-white transition-colors">list_alt</span>
+                <div *ngFor="let o of data.recent_orders" class="p-4 rounded-2xl border border-slate-100 hover:border-primary-100 hover:bg-primary-50 transition-colors group cursor-pointer" routerLink="/admin/pesanan">
+                  <div class="flex justify-between items-start mb-2">
+                    <div>
+                      <p class="font-bold text-slate-800 leading-tight">#{{ o.id }}</p>
+                      <p class="text-xs text-slate-500">{{ o.user_id?.full_name || 'Pelanggan' }}</p>
+                    </div>
+                    <span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider"
+                          [ngClass]="{
+                            'bg-blue-100 text-blue-700': o.status === 'Baru',
+                            'bg-amber-100 text-amber-700': o.status === 'Proses',
+                            'bg-emerald-100 text-emerald-700': o.status === 'Selesai' || o.status === 'Diambil',
+                            'bg-slate-100 text-slate-700': !['Baru','Proses','Selesai','Diambil'].includes(o.status)
+                          }">
+                      {{ o.status }}
+                    </span>
                   </div>
-                  <div class="flex-1">
-                    <h3 class="font-bold text-slate-800 group-hover:text-primary transition-colors">Kelola Pesanan</h3>
-                    <p class="text-xs text-slate-500">Lihat & update status</p>
+                  <div class="flex justify-between items-end mt-3">
+                    <p class="text-xs font-medium text-slate-500 truncate max-w-[120px]" [title]="o.pakets?.nama_paket">{{ o.pakets?.nama_paket }}</p>
+                    <p class="text-sm font-bold text-primary">Rp {{ o.total_bayar | number:'1.0-0' }}</p>
                   </div>
-                  <span class="material-icons text-slate-300 group-hover:text-primary transition-colors">chevron_right</span>
-                </a>
-
-                <a routerLink="/admin/pakets" class="group flex items-center p-4 bg-slate-50 hover:bg-primary-50 rounded-2xl transition-all duration-300 border border-slate-100 hover:border-primary-100 hover:-translate-y-1 hover:shadow-md">
-                  <div class="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center mr-4 group-hover:bg-primary transition-colors">
-                    <span class="material-icons text-slate-600 group-hover:text-white transition-colors">inventory_2</span>
-                  </div>
-                  <div class="flex-1">
-                    <h3 class="font-bold text-slate-800 group-hover:text-primary transition-colors">Kelola Paket</h3>
-                    <p class="text-xs text-slate-500">Tambah & edit layanan</p>
-                  </div>
-                  <span class="material-icons text-slate-300 group-hover:text-primary transition-colors">chevron_right</span>
-                </a>
-
-                <a routerLink="/admin/laporan" class="group flex items-center p-4 bg-slate-50 hover:bg-primary-50 rounded-2xl transition-all duration-300 border border-slate-100 hover:border-primary-100 hover:-translate-y-1 hover:shadow-md">
-                  <div class="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center mr-4 group-hover:bg-primary transition-colors">
-                    <span class="material-icons text-slate-600 group-hover:text-white transition-colors">assessment</span>
-                  </div>
-                  <div class="flex-1">
-                    <h3 class="font-bold text-slate-800 group-hover:text-primary transition-colors">Laporan Keuangan</h3>
-                    <p class="text-xs text-slate-500">Export PDF laporan</p>
-                  </div>
-                  <span class="material-icons text-slate-300 group-hover:text-primary transition-colors">chevron_right</span>
-                </a>
+                </div>
               </div>
             </div>
-            
           </div>
+          
         </div>
       </div>
     </div>

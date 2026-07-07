@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
@@ -9,7 +9,7 @@ import { ApiService } from '../../core/services/api.service';
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <div class="page">
-      <div class="header">
+      <div class="header animate-fade-up">
         <h1>Kelola Paket</h1>
         <button (click)="openForm()" class="btn-primary">
           <span class="material-icons">add</span> Tambah Paket
@@ -52,9 +52,14 @@ import { ApiService } from '../../core/services/api.service';
         </div>
       </div>
 
+      <!-- Skeleton Loading -->
+      <div *ngIf="loading" class="paket-grid animate-fade-up">
+        <div class="paket-card animate-shimmer" *ngFor="let i of [1,2,3]" style="height: 290px;"></div>
+      </div>
+
       <!-- List -->
-      <div class="paket-grid">
-        <div class="paket-card" *ngFor="let p of pakets">
+      <div class="paket-grid" *ngIf="!loading">
+        <div class="paket-card animate-fade-up interactive-hover" *ngFor="let p of pakets; let i = index" [style.animation-delay]="(i * 100) + 'ms'">
           <img *ngIf="p.foto_url" [src]="p.foto_url" class="paket-img" />
           <div *ngIf="!p.foto_url" class="paket-img placeholder">
             <span class="material-icons">dry_cleaning</span>
@@ -127,11 +132,13 @@ import { ApiService } from '../../core/services/api.service';
 export class AdminPaketsComponent implements OnInit {
   private fb = inject(FormBuilder);
   private api = inject(ApiService);
+  private cdr = inject(ChangeDetectorRef);
 
   pakets: any[] = [];
   showForm = false;
   editing: any = null;
   saving = false;
+  loading = true;
   error = '';
   foto: File | null = null;
 
@@ -145,7 +152,18 @@ export class AdminPaketsComponent implements OnInit {
   ngOnInit() { this.load(); }
 
   load() {
-    this.api.getAdminPakets().subscribe(d => this.pakets = d);
+    this.loading = true;
+    this.api.getAdminPakets().subscribe({
+      next: d => {
+        this.pakets = d;
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   openForm() {

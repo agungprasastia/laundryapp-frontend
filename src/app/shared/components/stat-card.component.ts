@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="card" [style.border-left-color]="color">
+    <div class="card" [style.border-left-color]="color" [style.--glow-color]="color + '40'">
       <div class="icon-wrap" [style.background]="color + '15'" [style.color]="color">
         <span class="material-icons">{{ icon }}</span>
       </div>
@@ -20,13 +20,22 @@ import { CommonModule } from '@angular/common';
     .card {
       display: flex; align-items: center; gap: 16px; padding: 20px; background: white;
       border-radius: 12px; border-left: 4px solid; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
     }
-    .card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .card:hover { 
+      transform: translateY(-4px) scale(1.02); 
+      box-shadow: 0 10px 25px -5px var(--glow-color, rgba(0,0,0,0.1)); 
+    }
+    .card:hover .icon-wrap .material-icons {
+      transform: scale(1.1) rotate(5deg);
+    }
     .icon-wrap {
       width: 48px; height: 48px; border-radius: 12px; display: flex;
       align-items: center; justify-content: center; flex-shrink: 0;
+      transition: transform 0.3s ease;
     }
+    .icon-wrap .material-icons { transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
     .info { display: flex; flex-direction: column; }
     .label { font-size: 13px; color: #6b7280; font-weight: 500; }
     .value { font-size: 24px; font-weight: 700; color: #111827; margin-top: 2px; }

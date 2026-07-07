@@ -1,4 +1,4 @@
-import { Component, inject, NgZone } from '@angular/core';
+import { Component, inject, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -84,6 +84,7 @@ export class LoginComponent {
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private zone = inject(NgZone);
+  private cdr = inject(ChangeDetectorRef);
 
   form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -100,6 +101,7 @@ export class LoginComponent {
     if (error) {
       this.error = 'Email atau password salah';
       this.loading = false;
+      this.cdr.detectChanges();
       return;
     }
     
@@ -115,5 +117,6 @@ export class LoginComponent {
       });
     }
     this.loading = false;
+    this.cdr.detectChanges();
   }
 }

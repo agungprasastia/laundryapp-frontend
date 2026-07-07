@@ -23,6 +23,10 @@ export class ApiService {
     return this.http.get(`${this.base}/me`);
   }
 
+  updateProfile(data: { full_name: string; phone?: string }): Observable<any> {
+    return this.http.put(`${this.base}/user/profile`, data);
+  }
+
   // User
   getUserDashboard(): Observable<any> {
     return this.http.get(`${this.base}/user/dashboard`);
@@ -42,9 +46,21 @@ export class ApiService {
     return this.http.post(`${this.base}/user/bayar/${id}`, fd);
   }
 
+  addRating(id: number, data: any): Observable<any> {
+    return this.http.post(`${this.base}/user/pesanan/${id}/rating`, data);
+  }
+
   // Admin
   getAdminDashboard(): Observable<any> {
     return this.http.get(`${this.base}/admin/dashboard`).pipe(timeout(15000));
+  }
+
+  getAdminCustomers(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/admin/customers`);
+  }
+
+  getAdminUlasan(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/admin/ulasan`);
   }
 
   getAdminPakets(): Observable<any[]> {

@@ -1,8 +1,9 @@
 import { Component, OnInit, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
 import { ApiService } from './core/services/api.service';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -65,7 +66,7 @@ import { ApiService } from './core/services/api.service';
       </div>
     </nav>
 
-    <main class="min-h-[calc(100vh-80px)] w-full overflow-x-hidden">
+    <main [class.min-h-[calc(100vh-80px)]]="showNav" class="w-full overflow-x-hidden">
       <router-outlet></router-outlet>
     </main>
 
@@ -146,7 +147,14 @@ export class AppComponent implements OnInit {
   menuOpen = false;
   showNav = true;
 
-  constructor(private auth: AuthService, private api: ApiService, private router: Router, private zone: NgZone) {}
+  constructor(private auth: AuthService, private api: ApiService, private router: Router, private zone: NgZone) {
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: any) => {
+      // Hide nav if user is in admin or user dashboard
+      this.showNav = !(event.urlAfterRedirects.startsWith('/admin') || event.urlAfterRedirects.startsWith('/user'));
+    });
+  }
 
   ngOnInit() {
     this.auth.session$.subscribe(session => {

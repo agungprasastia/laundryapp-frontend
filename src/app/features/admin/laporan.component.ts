@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
@@ -14,34 +14,45 @@ Chart.register(...registerables);
     <div class="page">
       <h1>Laporan Keuangan</h1>
 
-      <!-- Filters -->
-      <div class="filters">
-        <div class="field">
-          <label>Dari</label>
-          <input type="date" [(ngModel)]="dari" />
+      <!-- Filters & Actions -->
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
+        <div class="flex flex-wrap items-end gap-4">
+          <div class="field">
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Dari Tanggal</label>
+            <input type="date" [(ngModel)]="dari" class="bg-white border border-slate-200 text-slate-700 font-medium rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+          </div>
+          <div class="field">
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Sampai Tanggal</label>
+            <input type="date" [(ngModel)]="sampai" class="bg-white border border-slate-200 text-slate-700 font-medium rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+          </div>
+          <button (click)="load()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 px-6 rounded-xl shadow-md transition-all flex items-center gap-2">
+            <span class="material-icons text-[18px]">filter_list</span> Terapkan Filter
+          </button>
         </div>
-        <div class="field">
-          <label>Sampai</label>
-          <input type="date" [(ngModel)]="sampai" />
-        </div>
-        <button (click)="load()" class="btn-filter">
-          <span class="material-icons">filter_list</span> Filter
-        </button>
-        <button (click)="exportCSV()" class="btn-export" *ngIf="data">
-          <span class="material-icons">download</span> Export CSV
+        
+        <button (click)="exportCSV()" *ngIf="data" class="bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 font-bold py-2.5 px-6 rounded-xl shadow-sm transition-all flex items-center gap-2">
+          <span class="material-icons text-[18px]">download</span> Unduh Excel/CSV
         </button>
       </div>
 
+      <!-- Skeleton Loading -->
+      <div *ngIf="loading" class="animate-fade-up">
+        <div class="summary">
+          <div class="sum-card animate-shimmer" style="height: 84px;" *ngFor="let i of [1,2]"></div>
+        </div>
+        <div class="chart-section animate-shimmer" style="height: 380px;"></div>
+      </div>
+
       <!-- Summary -->
-      <div class="summary" *ngIf="data">
-        <div class="sum-card">
+      <div class="summary animate-fade-up animate-stagger-1" *ngIf="data && !loading">
+        <div class="sum-card interactive-hover">
           <span class="material-icons">payments</span>
           <div>
             <small>Total Pendapatan</small>
             <strong>Rp {{ data.total_pendapatan | number:'1.0-0' }}</strong>
           </div>
         </div>
-        <div class="sum-card">
+        <div class="sum-card interactive-hover">
           <span class="material-icons">receipt_long</span>
           <div>
             <small>Total Pesanan Lunas</small>
@@ -51,7 +62,7 @@ Chart.register(...registerables);
       </div>
 
       <!-- Chart -->
-      <div class="chart-section" *ngIf="data?.detail_harian?.length">
+      <div class="chart-section animate-fade-up animate-stagger-2" *ngIf="data?.detail_harian?.length && !loading">
         <h2>Grafik Pendapatan</h2>
         <div class="chart-container">
           <canvas #chartCanvas></canvas>
@@ -59,7 +70,7 @@ Chart.register(...registerables);
       </div>
 
       <!-- Detail table -->
-      <div class="table-wrap" *ngIf="data?.detail_harian?.length">
+      <div class="table-wrap animate-fade-up animate-stagger-3" *ngIf="data?.detail_harian?.length && !loading">
         <h2>Detail Harian</h2>
         <table>
           <thead>
@@ -120,9 +131,10 @@ export class AdminLaporanComponent implements OnInit {
   data: any = null;
   dari = '';
   sampai = '';
+  loading = true;
   private chart: Chart | null = null;
 
-  constructor(private api: ApiService) {
+  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {
     // Default: last 30 days
     const now = new Date();
     this.sampai = now.toISOString().split('T')[0];
@@ -134,12 +146,21 @@ export class AdminLaporanComponent implements OnInit {
   ngOnInit() { this.load(); }
 
   load() {
+    this.loading = true;
     const params: any = {};
     if (this.dari) params.dari = this.dari;
     if (this.sampai) params.sampai = this.sampai;
-    this.api.getLaporan(params).subscribe(d => {
-      this.data = d;
-      setTimeout(() => this.renderChart(), 100);
+    this.api.getLaporan(params).subscribe({
+      next: d => {
+        this.data = d;
+        this.loading = false;
+        this.cdr.detectChanges();
+        setTimeout(() => this.renderChart(), 100);
+      },
+      error: () => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 

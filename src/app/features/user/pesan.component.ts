@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -30,8 +30,15 @@ import { ApiService } from '../../core/services/api.service';
         <!-- Step 1: Choose paket -->
         <div *ngIf="step === 1" class="step-content">
           <p class="step-desc">Pilih paket laundry yang Anda inginkan:</p>
-          <div class="paket-grid">
-            <div class="paket-option" *ngFor="let p of pakets"
+          
+          <!-- Skeleton Loading -->
+          <div *ngIf="isFetching" class="paket-grid animate-fade-up">
+            <div class="paket-option animate-shimmer" *ngFor="let i of [1,2,3]" style="height: 180px;"></div>
+          </div>
+
+          <div class="paket-grid" *ngIf="!isFetching">
+            <div class="paket-option animate-fade-up interactive-hover" *ngFor="let p of pakets; let i = index"
+                 [style.animation-delay]="(i * 100) + 'ms'"
                  [class.selected]="selectedPaket?.id === p.id"
                  (click)="selectPaket(p)">
               <div class="paket-icon">
@@ -169,12 +176,24 @@ export class PesanComponent implements OnInit {
   catatan = '';
   step = 1;
   loading = false;
+  isFetching = true;
   error = '';
 
-  constructor(private api: ApiService, private router: Router) {}
+  constructor(private api: ApiService, private router: Router, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
-    this.api.getPakets().subscribe(data => this.pakets = data);
+    this.isFetching = true;
+    this.api.getPakets().subscribe({
+      next: data => {
+        this.pakets = data;
+        this.isFetching = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isFetching = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   selectPaket(p: any) { this.selectedPaket = p; }
@@ -184,7 +203,11 @@ export class PesanComponent implements OnInit {
     this.error = '';
     this.api.createPesanan({ paket_id: this.selectedPaket.id, catatan: this.catatan }).subscribe({
       next: (data) => { this.router.navigate(['/user/pesanan', data.id]); },
-      error: (err) => { this.error = err.error?.error || 'Gagal membuat pesanan'; this.loading = false; },
+      error: (err) => { 
+        this.error = err.error?.error || 'Gagal membuat pesanan'; 
+        this.loading = false; 
+        this.cdr.detectChanges();
+      },
     });
   }
 }

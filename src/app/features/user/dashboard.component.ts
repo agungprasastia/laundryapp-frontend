@@ -11,14 +11,13 @@ import { StatCardComponent } from '../../shared/components/stat-card.component';
   standalone: true,
   imports: [CommonModule, RouterModule, StatusBadgeComponent, StatusStepperComponent, StatCardComponent],
   template: `
-    <div class="min-h-screen bg-slate-50 p-6 md:p-8 font-sans">
-      <div class="max-w-5xl mx-auto">
+    <div class="p-6 md:p-8 font-sans w-full max-w-5xl mx-auto">
         
         <!-- Header Banner -->
-        <div class="bg-gradient-to-r from-primary to-primary-700 rounded-3xl p-8 md:p-10 text-white mb-10 shadow-lg shadow-primary/20 relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
+        <div class="animate-fade-up bg-gradient-to-r from-primary to-primary-700 rounded-3xl p-8 md:p-10 text-white mb-10 shadow-lg shadow-primary/20 relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6 group">
+          <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20 transition-transform duration-1000 group-hover:scale-150"></div>
           <div class="relative z-10">
-            <h1 class="text-3xl md:text-4xl font-bold font-serif mb-2">Dashboard Saya 👋</h1>
+            <h1 class="text-3xl md:text-4xl font-bold font-serif mb-2 text-white">Dashboard Saya👋</h1>
             <p class="text-primary-100 text-lg">Kelola dan pantau pesanan laundry Anda dengan mudah.</p>
           </div>
           <a routerLink="/user/pesan" class="relative z-10 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-primary font-bold rounded-xl hover:bg-slate-50 hover:scale-105 transition-all duration-300 shadow-md w-full md:w-auto">
@@ -31,32 +30,42 @@ import { StatCardComponent } from '../../shared/components/stat-card.component';
           <span class="material-icons">error_outline</span> {{ errorMsg }}
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-10" *ngIf="data">
-          <app-stat-card label="Total Pesanan" [value]="data.stats.total" icon="receipt_long" color="#0d9488"></app-stat-card>
-          <app-stat-card label="Baru" [value]="data.stats.baru" icon="fiber_new" color="#3b82f6"></app-stat-card>
-          <app-stat-card label="Proses" [value]="data.stats.proses" icon="autorenew" color="#f59e0b"></app-stat-card>
-          <app-stat-card label="Selesai" [value]="data.stats.selesai" icon="check_circle" color="#10b981"></app-stat-card>
+        <!-- Skeleton Loading -->
+        <div *ngIf="loading" class="animate-fade-up">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-10">
+            <div *ngFor="let i of [1,2,3,4]" class="h-[104px] rounded-xl animate-shimmer"></div>
+          </div>
+          <div class="flex flex-col gap-6">
+            <div class="h-32 rounded-3xl animate-shimmer" *ngFor="let i of [1,2,3]"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-10" *ngIf="data && !loading">
+          <app-stat-card class="animate-fade-up animate-stagger-1" label="Total Pesanan" [value]="data.stats.total" icon="receipt_long" color="#0d9488"></app-stat-card>
+          <app-stat-card class="animate-fade-up animate-stagger-2" label="Baru" [value]="data.stats.baru" icon="fiber_new" color="#3b82f6"></app-stat-card>
+          <app-stat-card class="animate-fade-up animate-stagger-3" label="Proses" [value]="data.stats.proses" icon="autorenew" color="#f59e0b"></app-stat-card>
+          <app-stat-card class="animate-fade-up animate-stagger-4" label="Selesai" [value]="data.stats.selesai" icon="check_circle" color="#10b981"></app-stat-card>
         </div>
 
         <!-- Pesanan list -->
-        <div *ngIf="data" class="mb-10">
-          <div class="flex items-center justify-between mb-6">
+        <div *ngIf="data && !loading" class="mb-10">
+          <div class="flex items-center justify-between mb-6 animate-fade-up animate-stagger-1">
             <h2 class="text-2xl font-bold text-slate-800 font-sans">Riwayat Pesanan</h2>
           </div>
           
-          <div *ngIf="!data.pesanans.length" class="bg-white rounded-3xl p-12 text-center border border-slate-100 shadow-sm">
+          <div *ngIf="!data.pesanans.length" class="bg-white rounded-3xl p-12 text-center border border-slate-100 shadow-sm animate-fade-up animate-stagger-2">
             <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
               <span class="material-icons text-5xl text-slate-300">inbox</span>
             </div>
             <h3 class="text-xl font-bold text-slate-700 mb-2 font-sans">Belum ada pesanan</h3>
             <p class="text-slate-500 mb-8">Anda belum pernah membuat pesanan laundry.</p>
-            <a routerLink="/user/pesan" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary-600 transition-colors shadow-md shadow-primary/20">
+            <a routerLink="/user/pesan" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary-600 transition-colors shadow-md shadow-primary/20 hover:scale-105 active:scale-95 duration-300">
               Mulai Pesanan Pertama
             </a>
           </div>
 
           <div class="flex flex-col gap-6" *ngIf="data.pesanans.length">
-            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow duration-300 border border-slate-100" *ngFor="let p of data.pesanans">
+            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100 interactive-hover animate-fade-up" *ngFor="let p of data.pesanans; let i = index" [style.animation-delay]="(i * 100 + 200) + 'ms'">
               
               <div class="flex flex-wrap justify-between items-center mb-6 gap-4 border-b border-slate-100 pb-6">
                 <div class="flex items-center gap-3">
@@ -109,7 +118,6 @@ import { StatCardComponent } from '../../shared/components/stat-card.component';
         <div *ngIf="loading" class="flex flex-col gap-6">
           <div class="h-32 rounded-3xl bg-slate-200 animate-pulse" *ngFor="let i of [1,2,3]"></div>
         </div>
-      </div>
     </div>
   `,
   styles: []
@@ -119,14 +127,14 @@ export class UserDashboardComponent implements OnInit {
   loading = true;
   errorMsg = '';
 
-  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
+  constructor(private api: ApiService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit() {
     this.api.getUserDashboard().subscribe({
-      next: d => { 
-        this.data = d; 
-        this.loading = false; 
-        this.cdr.detectChanges(); 
+      next: d => {
+        this.data = d;
+        this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Failed to load user dashboard:', err);
