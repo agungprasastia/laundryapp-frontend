@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
@@ -39,7 +39,7 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge.compo
           {{ error }}
         </div>
 
-        <div *ngIf="searched && !results.length && !loading" class="text-center py-16 px-6 mt-8 bg-white rounded-3xl border border-slate-100 shadow-sm animate-slideInUp">
+        <div *ngIf="searched && !results.length && !loading && !error" class="text-center py-16 px-6 mt-8 bg-white rounded-3xl border border-slate-100 shadow-sm animate-slideInUp">
           <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
             <span class="material-icons text-5xl text-slate-300">inbox</span>
           </div>
@@ -116,16 +116,25 @@ export class CekStatusComponent {
   error = '';
   searched = false;
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   search() {
     if (!this.query.trim()) return;
     this.loading = true;
     this.error = '';
     this.searched = true;
+    this.cdr.detectChanges();
     this.api.cekStatus(this.query.trim()).subscribe({
-      next: data => { this.results = data; this.loading = false; },
-      error: () => { this.error = 'Gagal mencari pesanan'; this.loading = false; },
+      next: data => { 
+        this.results = data; 
+        this.loading = false; 
+        this.cdr.detectChanges(); 
+      },
+      error: () => { 
+        this.error = 'Gagal mencari pesanan. Pastikan backend aktif atau koneksi internet stabil.'; 
+        this.loading = false; 
+        this.cdr.detectChanges(); 
+      },
     });
   }
 }
