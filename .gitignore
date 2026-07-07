@@ -44,6 +44,7 @@ __screenshots__/
 Thumbs.db
 
 # Environment files
-/src/environments/environment.ts
-/src/environments/environment.prod.ts
-/src/environments/environment.development.ts
+# (Frontend environments only contain public keys, safe to commit)
+# /src/environments/environment.ts
+# /src/environments/environment.prod.ts
+# /src/environments/environment.development.ts
