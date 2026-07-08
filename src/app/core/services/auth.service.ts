@@ -36,7 +36,11 @@ export class AuthService {
   }
 
   async signIn(email: string, password: string) {
-    return this.supabase.auth.signInWithPassword({ email, password });
+    const res = await this.supabase.auth.signInWithPassword({ email, password });
+    if (res.data?.session) {
+      this.sessionSubject.next(res.data.session);
+    }
+    return res;
   }
 
   async signOut() {
