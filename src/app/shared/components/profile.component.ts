@@ -17,8 +17,15 @@ import { ApiService } from '../../core/services/api.service';
       <div class="bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-slate-100 animate-fade-up">
         
         <div class="flex items-center gap-6 mb-10 pb-8 border-b border-slate-100">
-          <div class="w-24 h-24 rounded-full bg-primary-50 text-primary flex items-center justify-center text-4xl font-bold shadow-inner">
-            {{ getInitials() }}
+          <div class="relative group">
+            <div *ngIf="!uploadedAvatarUrl" class="w-24 h-24 rounded-full bg-primary-50 text-primary flex items-center justify-center text-4xl font-bold shadow-inner">
+              {{ getInitials() }}
+            </div>
+            <img *ngIf="uploadedAvatarUrl" [src]="uploadedAvatarUrl" class="w-24 h-24 rounded-full object-cover shadow-inner" />
+            <label class="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
+              <span class="material-icons text-white">photo_camera</span>
+              <input type="file" accept="image/*" class="hidden" (change)="onAvatarSelected($event)">
+            </label>
           </div>
           <div>
             <h2 class="text-2xl font-bold text-slate-800">{{ profile?.full_name || 'Memuat...' }}</h2>
@@ -157,5 +164,20 @@ export class ProfileComponent implements OnInit {
       return (parts[0][0] + parts[1][0]).toUpperCase();
     }
     return parts[0][0].toUpperCase();
+  }
+
+  uploadedAvatarUrl: string | null = null;
+  
+  onAvatarSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.uploadedAvatarUrl = e.target.result;
+        this.successMsg = 'Foto profil berhasil diperbarui.';
+        setTimeout(() => this.successMsg = '', 3000);
+      };
+      reader.readAsDataURL(file);
+    }
   }
 }
