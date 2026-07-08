@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
@@ -114,7 +114,7 @@ export class ProfileComponent implements OnInit {
   successMsg = '';
   errorMsg = '';
 
-  constructor(private fb: FormBuilder, private api: ApiService, private cdr: import('@angular/core').ChangeDetectorRef) {
+  constructor(private fb: FormBuilder, private api: ApiService, private cdr: ChangeDetectorRef) {
     this.form = this.fb.group({
       full_name: ['', [Validators.required, Validators.maxLength(100)]],
       phone: ['', [Validators.maxLength(20)]]
