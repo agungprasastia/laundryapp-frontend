@@ -18,13 +18,13 @@ import { ApiService } from '../../core/services/api.service';
         
         <div class="flex items-center gap-6 mb-10 pb-8 border-b border-slate-100">
           <div class="relative group">
-            <div *ngIf="!uploadedAvatarUrl" class="w-24 h-24 rounded-full bg-primary-50 text-primary flex items-center justify-center text-4xl font-bold shadow-inner">
+            <div *ngIf="!uploadedAvatarUrl && !profile?.avatar_url" class="w-24 h-24 rounded-full bg-primary-50 text-primary flex items-center justify-center text-4xl font-bold shadow-inner">
               {{ getInitials() }}
             </div>
-            <img *ngIf="uploadedAvatarUrl" [src]="uploadedAvatarUrl" class="w-24 h-24 rounded-full object-cover shadow-inner" />
+            <img *ngIf="uploadedAvatarUrl || profile?.avatar_url" [src]="uploadedAvatarUrl || profile?.avatar_url" class="w-24 h-24 rounded-full object-cover shadow-inner" />
             <label class="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
               <span class="material-icons text-white">photo_camera</span>
-              <input type="file" accept="image/*" class="hidden" (change)="onAvatarSelected($event)">
+              <input #fileInput type="file" accept="image/*" class="hidden" (change)="onAvatarSelected($event)">
             </label>
           </div>
           <div>
@@ -143,10 +143,17 @@ export class ProfileComponent implements OnInit {
     this.loading = true;
     this.successMsg = '';
     this.errorMsg = '';
+    this.cdr.detectChanges();
     
-    this.api.updateProfile(this.form.value).subscribe({
+    const fd = new FormData();
+    fd.append('full_name', this.form.value.full_name);
+    if (this.form.value.phone) fd.append('phone', this.form.value.phone);
+    if (this.selectedAvatarFile) fd.append('avatar', this.selectedAvatarFile);
+
+    this.api.updateProfile(fd).subscribe({
       next: (data) => {
         this.profile = { ...this.profile, ...data };
+        this.api.updateProfileState(this.profile);
         this.loading = false;
         this.successMsg = 'Data profil Anda berhasil diperbarui.';
         this.cdr.detectChanges();
@@ -170,15 +177,16 @@ export class ProfileComponent implements OnInit {
   }
 
   uploadedAvatarUrl: string | null = null;
+  selectedAvatarFile: File | null = null;
   
   onAvatarSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
+      this.selectedAvatarFile = file;
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.uploadedAvatarUrl = e.target.result;
-        this.successMsg = 'Foto profil berhasil diperbarui.';
-        setTimeout(() => this.successMsg = '', 3000);
+        this.cdr.detectChanges();
       };
       reader.readAsDataURL(file);
     }

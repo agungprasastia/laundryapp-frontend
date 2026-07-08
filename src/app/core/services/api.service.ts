@@ -1,11 +1,18 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { Observable, timeout } from 'rxjs';
+import { Observable, timeout, BehaviorSubject, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private base = environment.apiUrl;
+  
+  private profileSubject = new BehaviorSubject<any>(null);
+  profileState$ = this.profileSubject.asObservable();
+
+  updateProfileState(profile: any) {
+    this.profileSubject.next(profile);
+  }
 
   constructor(private http: HttpClient) {}
 
@@ -20,10 +27,12 @@ export class ApiService {
 
   // Auth
   getMe(): Observable<any> {
-    return this.http.get(`${this.base}/me`);
+    return this.http.get(`${this.base}/me`).pipe(
+      tap(data => this.updateProfileState(data))
+    );
   }
 
-  updateProfile(data: { full_name: string; phone?: string }): Observable<any> {
+  updateProfile(data: FormData): Observable<any> {
     return this.http.put(`${this.base}/user/profile`, data);
   }
 

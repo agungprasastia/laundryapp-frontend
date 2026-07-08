@@ -82,10 +82,11 @@ import { ApiService } from '../core/services/api.service';
                 </p>
                 <p class="text-xs text-slate-500">Pelanggan Setia</p>
               </div>
-              <div class="w-10 h-10 rounded-full bg-primary-100 text-primary flex items-center justify-center font-bold border border-primary-200">
+              <div *ngIf="!profile?.avatar_url" class="w-10 h-10 rounded-full bg-primary-100 text-primary flex items-center justify-center font-bold border border-primary-200">
                 <span *ngIf="!profile" class="material-icons text-xl">person</span>
                 <span *ngIf="profile">{{ getInitials() }}</span>
               </div>
+              <img *ngIf="profile?.avatar_url" [src]="profile.avatar_url" class="w-10 h-10 rounded-full object-cover border border-primary-200" />
               <span class="material-icons text-slate-400 text-sm transition-transform duration-200" [class.rotate-180]="profileMenuOpen">expand_more</span>
             </button>
 
@@ -151,9 +152,10 @@ export class UserLayoutComponent implements OnInit {
         this.profile = { ...this.profile, ...session.user.user_metadata };
       }
     });
-    this.api.getMe().subscribe({
-      next: (data) => this.profile = { ...this.profile, ...data }
+    this.api.profileState$.subscribe(profile => {
+      if (profile) this.profile = { ...this.profile, ...profile };
     });
+    this.api.getMe().subscribe(); // Triggers updateProfileState internally
   }
 
   getInitials(): string {
