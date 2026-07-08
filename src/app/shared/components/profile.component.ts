@@ -114,7 +114,7 @@ export class ProfileComponent implements OnInit {
   successMsg = '';
   errorMsg = '';
 
-  constructor(private fb: FormBuilder, private api: ApiService) {
+  constructor(private fb: FormBuilder, private api: ApiService, private cdr: import('@angular/core').ChangeDetectorRef) {
     this.form = this.fb.group({
       full_name: ['', [Validators.required, Validators.maxLength(100)]],
       phone: ['', [Validators.maxLength(20)]]
@@ -133,6 +133,7 @@ export class ProfileComponent implements OnInit {
           full_name: data.full_name,
           phone: data.phone
         });
+        this.cdr.detectChanges();
       }
     });
   }
@@ -148,11 +149,13 @@ export class ProfileComponent implements OnInit {
         this.profile = { ...this.profile, ...data };
         this.loading = false;
         this.successMsg = 'Data profil Anda berhasil diperbarui.';
-        setTimeout(() => this.successMsg = '', 5000);
+        this.cdr.detectChanges();
+        setTimeout(() => { this.successMsg = ''; this.cdr.detectChanges(); }, 5000);
       },
       error: (err) => {
         this.loading = false;
         this.errorMsg = err.error?.error || 'Terjadi kesalahan saat menyimpan data.';
+        this.cdr.detectChanges();
       }
     });
   }
